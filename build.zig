@@ -31,6 +31,11 @@ pub fn build(b: *Builder) void {
             .desc = "Simple keyboard input",
         },
         .{
+            .name = "animated_sprite",
+            .path = "examples/core/animated_sprite.zig",
+            .desc = "My first test",
+        },
+        .{
             .name = "input_mouse",
             .path = "examples/core/input_mouse.zig",
             .desc = "Simple mouse input",
