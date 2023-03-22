@@ -44,6 +44,12 @@ pub fn main() anyerror!void {
 
     var ballPosition = rl.Vector2 { .x = screenWidth/2, .y = screenHeight/2 };
 
+    var camera = rl.Camera2D{ 
+        .offset = rl.Vector2{.x = screenWidth/2, .y = screenHeight/2},
+        .target = rl.Vector2{.x = screenWidth/2, .y = screenHeight/2},
+        .rotation = 0,
+        .zoom = 1.0,
+    };
 
     const fxWav: rl.Sound = rl.LoadSound("assets/player-character-death.mp3");         // Load audio file
     rl.SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
@@ -60,6 +66,17 @@ pub fn main() anyerror!void {
         if (rl.IsKeyDown(rl.KeyboardKey.KEY_LEFT)) { ballPosition.x -= 2.0; }
         if (rl.IsKeyDown(rl.KeyboardKey.KEY_UP)) { ballPosition.y -= 2.0; }
         if (rl.IsKeyDown(rl.KeyboardKey.KEY_DOWN)) { ballPosition.y += 2.0; }
+        if (rl.IsKeyDown(rl.KeyboardKey.KEY_W)) { camera.target.y -= 2.0; }
+        if (rl.IsKeyDown(rl.KeyboardKey.KEY_A)) { camera.target.x -= 2.0; }
+        if (rl.IsKeyDown(rl.KeyboardKey.KEY_S)) { camera.target.y += 2.0; }
+        if (rl.IsKeyDown(rl.KeyboardKey.KEY_D)) { camera.target.x += 2.0; }
+
+
+        // Camera zoom controls
+        camera.zoom += rl.GetMouseWheelMove()*0.05;
+
+        if (camera.zoom > 3.0) { camera.zoom = 3.0;}
+        else if (camera.zoom < 0.1) {camera.zoom = 0.1;}
         //----------------------------------------------------------------------------------
 
         // Draw
@@ -68,10 +85,13 @@ pub fn main() anyerror!void {
 
             rl.ClearBackground(rl.RAYWHITE);
 
+            rl.BeginMode2D(camera);
+
             rl.DrawCircleV(ballPosition, 50, rl.MAROON);
             
             rl.DrawTexturePro(textures[@mod(@floatToInt(u64, rl.GetTime()*6), MAX_TEXTURES)], sourceRec, destRec, origin, 0.0, rl.WHITE);
 
+            rl.EndMode2D();
         rl.EndDrawing();
         //----------------------------------------------------------------------------------
     }
