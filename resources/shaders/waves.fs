@@ -25,8 +25,9 @@ void main()
     float wavePeriod = 0.1;
     float waveSpeed = 0.2;
     float wholeWaveBodyUpAndDownAmount = 0.02;
+    float verticalOffset = 0.09;
 
-    if(coord.y + thresholdY*wholeWaveBodyUpAndDownAmount > size.y/2.0 + cos((coord.x+seconds*waveSpeed)/wavePeriod)*waveHeight){
+    if(coord.y + thresholdY*wholeWaveBodyUpAndDownAmount > size.y/2.0 + cos((coord.x+seconds*waveSpeed)/wavePeriod)*waveHeight + verticalOffset){
         finalColor = vec4(0.0);
     }else{
         vec2 xy = coord.xy / size;//Condensing this into one line
