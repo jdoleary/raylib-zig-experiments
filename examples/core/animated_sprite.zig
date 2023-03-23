@@ -51,16 +51,23 @@ pub fn main() anyerror!void {
         .zoom = 1.0,
     };
 
-    const shader = rl.LoadShader(0, rl.TextFormat("resources/shaders/grayscale.fs", @intCast(c_int, 330)));
+    // const shader = rl.LoadShader(0, rl.TextFormat("resources/shaders/grayscale.fs", @intCast(c_int, 330)));
+    const shader = rl.LoadShader(0, rl.TextFormat("resources/shaders/waves.fs", @intCast(c_int, 330)));
+    rl.SetShaderValue(shader, rl.GetShaderLocation(shader, "size"), &rl.Vector2{.x = 1.0, .y= 1.0}, @enumToInt(rl.ShaderUniformDataType.SHADER_UNIFORM_VEC2));
+    const secondsLoc = rl.GetShaderLocation(shader, "seconds");
     const fxWav: rl.Sound = rl.LoadSound("assets/player-character-death.mp3");         // Load audio file
     rl.SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
     //--------------------------------------------------------------------------------------
+    var seconds:f32 = 0.0;
 
     // Main game loop
     while (!rl.WindowShouldClose())   // Detect window close button or ESC key
     {
         // Update
         //----------------------------------------------------------------------------------
+        seconds += rl.GetFrameTime();
+
+        rl.SetShaderValue(shader, secondsLoc, &seconds, @enumToInt(rl.ShaderUniformDataType.SHADER_UNIFORM_FLOAT));
 
         if (rl.IsKeyPressed(rl.KeyboardKey.KEY_SPACE)) rl.PlaySound(fxWav);      // Play WAV sound
         if (rl.IsKeyDown(rl.KeyboardKey.KEY_RIGHT)) { ballPosition.x += 2.0; }
