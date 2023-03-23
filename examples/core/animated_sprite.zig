@@ -51,6 +51,7 @@ pub fn main() anyerror!void {
         .zoom = 1.0,
     };
 
+    const shader = rl.LoadShader(0, rl.TextFormat("resources/shaders/grayscale.fs", @intCast(c_int, 330)));
     const fxWav: rl.Sound = rl.LoadSound("assets/player-character-death.mp3");         // Load audio file
     rl.SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
     //--------------------------------------------------------------------------------------
@@ -89,7 +90,9 @@ pub fn main() anyerror!void {
 
             rl.DrawCircleV(ballPosition, 50, rl.MAROON);
             
+            rl.BeginShaderMode(shader);
             rl.DrawTexturePro(textures[@mod(@floatToInt(u64, rl.GetTime()*6), MAX_TEXTURES)], sourceRec, destRec, origin, 0.0, rl.WHITE);
+            rl.EndShaderMode();
 
             rl.EndMode2D();
         rl.EndDrawing();
@@ -98,6 +101,7 @@ pub fn main() anyerror!void {
     for(textures) |item| {
         rl.UnloadTexture(item);        // Texture unloading
     }
+    rl.UnloadShader(shader);
 
     // De-Initialization
     //--------------------------------------------------------------------------------------

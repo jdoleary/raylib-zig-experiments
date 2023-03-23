@@ -36,6 +36,11 @@ pub fn build(b: *Builder) void {
             .desc = "My first test",
         },
         .{
+            .name = "shader_outline",
+            .path = "examples/core/shader_outline.zig",
+            .desc = "My first test",
+        },
+        .{
             .name = "input_mouse",
             .path = "examples/core/input_mouse.zig",
             .desc = "Simple mouse input",

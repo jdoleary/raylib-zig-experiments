@@ -1,0 +1,1 @@
+C:\\zig-windows-x86_64-0.10.1\\zig build animated_sprite
