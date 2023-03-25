@@ -2,11 +2,24 @@
 
 const std = @import("std");
 const rl = @import("raylib");
+const c = @cImport({
+    @cInclude("my_header.h");
+    @cInclude("raylib.h");
+    @cDefine("RAYGUI_IMPLEMENTATION", {});
+    @cInclude("raygui.h");
+});
 
 const MAX_FRAME_SPEED = 15;
 const MIN_FRAME_SPEED = 1;
-
+// pub const Rectangle = extern struct {
+//     x:f32,
+//     y:f32,
+//     width:f32,
+//     height:f32,
+// };
 pub fn main() anyerror!void {
+    std.debug.print("{}\n", .{c.my_function()});
+    std.debug.print("{}\n", .{c.GuiGetState()});
     // Initialization
     //--------------------------------------------------------------------------------------
     const screenWidth = 800;
@@ -60,6 +73,9 @@ pub fn main() anyerror!void {
         rl.BeginDrawing();
 
             rl.ClearBackground(rl.RAYWHITE);
+            if (c.GuiButton(.{ .x= 25, .y=255, .width=125, .height=30 }, "test")) {
+                std.debug.print("Button!\n", .{});
+            }
 
             rl.DrawTexture(scarfy, 15, 40, rl.WHITE);
             rl.DrawRectangleLines(15, 40, scarfy.width, scarfy.height, rl.LIME);
@@ -68,6 +84,7 @@ pub fn main() anyerror!void {
             rl.DrawText("FRAME SPEED: ", 165, 210, 10, rl.DARKGRAY);
             rl.DrawText(rl.TextFormat("%02i FPS", framesSpeed), 575, 210, 10, rl.DARKGRAY);
             rl.DrawText("PRESS RIGHT/LEFT KEYS to CHANGE SPEED!", 290, 240, 10, rl.DARKGRAY);
+            
 
             for ([_]u32{0} ** MAX_FRAME_SPEED) |_, i| {
                 if (i < framesSpeed) {rl.DrawRectangle(250 + 21*@intCast(c_int, i), 205, 20, 20, rl.RED);}

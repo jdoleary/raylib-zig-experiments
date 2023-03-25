@@ -75,6 +75,7 @@ pub fn build(b: *Builder) void {
 
         exe.setBuildMode(mode);
         exe.setTarget(target);
+        exe.addIncludePath("includeHeaders");
 
         raylib.link(exe, system_lib);
         raylib.addAsPackage("raylib", exe);
