@@ -28,12 +28,13 @@ const Unit = struct {
     velocity: rl.Vector2,
 };
 
-fn moveToTargetDynamicSpeed(self: *rl.Vector2, target:rl.Vector2) bool {
-    const speed = rlm.Lerp(0.0,20.0, rlm.Vector2Distance(self.*, target)/300.0);
+fn moveToTarget(self: *rl.Vector2, target:rl.Vector2, speed: f32) bool {
     var bigA = target.x - self.x;
     var bigB = target.y - self.y;
     var bigC = @sqrt(bigA*bigA + bigB*bigB);
     if(bigC < speed){
+        self.x = target.x;
+        self.y = target.y;
         return true;
     }
     if(bigC == 0){
@@ -46,7 +47,48 @@ fn moveToTargetDynamicSpeed(self: *rl.Vector2, target:rl.Vector2) bool {
     // Haven't yet reached target
     return false;
 }
-
+fn moveToTargetDynamicSpeed(self: *rl.Vector2, target:rl.Vector2) bool {
+    const speed = rlm.Lerp(0.0,20.0, rlm.Vector2Distance(self.*, target)/300.0);
+    return moveToTarget(self, target, speed);
+}
+fn areUnitsColliding(a: *Unit, b: *Unit) bool {
+    return rlm.Vector2Distance(a.pos, b.pos) <= unit_size*2;
+}
+// Reduces velocity per tick
+const drag = 0.94;
+fn useVelocity(self: *Unit) void {
+    self.pos.x += self.velocity.x;
+    self.pos.y += self.velocity.y;
+    self.velocity.x *= drag;
+    self.velocity.y *= drag;
+}
+fn doArenaBorderCollision(unit: *Unit) void {
+    if(unit.pos.x > arena_size){
+        unit.pos.x = arena_size;
+    }
+    if(unit.pos.x < 0){
+        unit.pos.x = 0;
+    }
+    if(unit.pos.y > arena_size){
+        unit.pos.y = arena_size;
+    }
+    if(unit.pos.y < 0){
+        unit.pos.y = 0;
+    }
+}
+const bounce_velocity = 20.0;
+fn addVelocityAway(forUnit: *Unit, from: rl.Vector2) void{
+    const bigA = from.x - forUnit.pos.x;
+    const bigB = from.y - forUnit.pos.y;
+    const bigC = @sqrt(bigA*bigA + bigB*bigB);
+    if(bigC == 0){
+        return;
+    }
+    const a = bigA/bigC;
+    const b = bigA/bigC;
+    forUnit.velocity.x -= a*bounce_velocity;
+    forUnit.velocity.y -= b*bounce_velocity;
+}
 
 pub fn main() anyerror!void {
     // Initialization
@@ -101,16 +143,17 @@ pub fn main() anyerror!void {
             // std.debug.print("mouse: {d:.2} {d:.2}, {d:.2} {d:.2}\n", .{mousePos.x, mousePos.y, mousePosRaw.x, mousePosRaw.y});
             _ = moveToTargetDynamicSpeed(&hero.pos, mousePos);
             _ = moveToTargetDynamicSpeed(&camera.target, hero.pos);
+            doArenaBorderCollision(&hero);
 
             rl.ClearBackground(rl.RAYWHITE);
-            if (c.GuiButton(.{ .x= 25, .y=255, .width=125, .height=30 }, "test")) {
-                std.debug.print("Button!\n", .{});
-            }
+            // if (c.GuiButton(.{ .x= 25, .y=255, .width=125, .height=30 }, "test")) {
+            //     std.debug.print("Button!\n", .{});
+            // }
             // Draw grid
-            const grids = 10;
+            const grids = arena_size/100;
             for ([_]u32{0} ** grids) |_, i| {
                 for ([_]u32{0} ** grids) |_, j| {
-                    rl.DrawCircle(@intCast(c_int,i*64), @intCast(c_int,j*64), 2, rl.BLACK);
+                    rl.DrawCircle(@intCast(c_int,i*100), @intCast(c_int,j*100), 2, rl.BLACK);
                 }
             }
             // std.debug.print("hero: {d},{d}\n", .{hero.pos.x, hero.pos.y});
