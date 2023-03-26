@@ -158,8 +158,8 @@ pub fn main() anyerror!void {
             }
             // std.debug.print("hero: {d},{d}\n", .{hero.pos.x, hero.pos.y});
             rl.DrawCircle(@floatToInt(c_int, hero.pos.x), @floatToInt(c_int,hero.pos.y), 16, rl.GREEN);
-            rl.DrawFPS(25,25);
             camera.End();
+            rl.DrawFPS(25,25);
         rl.EndDrawing();
         //----------------------------------------------------------------------------------
     }
