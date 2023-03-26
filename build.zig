@@ -55,6 +55,11 @@ pub fn build(b: *Builder) void {
             .path = "examples/textures/sprite_anim.zig",
             .desc = "Animate a sprite",
         },
+        .{
+            .name = "dodge_this",
+            .path = "examples/textures/dodge_this.zig",
+            .desc = "Classic Dodge This game",
+        },
         // .{
         //     .name = "models_loading",
         //     .path = "examples/models/models_loading.zig",

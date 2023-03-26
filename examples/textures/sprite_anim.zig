@@ -11,12 +11,7 @@ const c = @cImport({
 
 const MAX_FRAME_SPEED = 15;
 const MIN_FRAME_SPEED = 1;
-// pub const Rectangle = extern struct {
-//     x:f32,
-//     y:f32,
-//     width:f32,
-//     height:f32,
-// };
+
 pub fn main() anyerror!void {
     std.debug.print("{}\n", .{c.my_function()});
     std.debug.print("{}\n", .{c.GuiGetState()});
