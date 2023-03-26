@@ -190,18 +190,22 @@ pub fn main() anyerror!void {
                         break;
                     },
                     Kind.blue => {
-                        break;
-                    },
-                    Kind.yellow => {
                         if(rlm.Vector2Distance(enemy.pos, hero.pos) < agro_radius){
                             enemy.target = rlm.Vector2Subtract(enemy.pos, rlm.Vector2Subtract(hero.pos, enemy.pos));
                         }
+                        break;
+                    },
+                    Kind.yellow => {
                     },
                     Kind.red => {
                         break;
                     },
                 }
-                _ = moveToTarget(&enemy.pos, enemy.target, 2);
+                const arrivedAtTarget = moveToTarget(&enemy.pos, enemy.target, 2);
+                if(arrivedAtTarget){
+                    // Pick a new target
+                    enemy.target = getRandomPointBetweenBounds();
+                }
                 if(areUnitsColliding(&hero, enemy)){
                     addVelocityAway(enemy, hero.pos);
                     addVelocityAway(&hero, enemy.*.pos);
