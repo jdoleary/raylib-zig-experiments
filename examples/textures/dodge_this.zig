@@ -223,14 +223,16 @@ pub fn main() anyerror!void {
                         },
                         Kind.red => {
                             heroHealth-=1;
+                            addVelocityAway(enemy, hero.pos);
+                            addVelocityAway(&hero, enemy.*.pos);
                         },
                         Kind.yellow => {
                             heroHealth-=1;
+                            addVelocityAway(enemy, hero.pos);
+                            addVelocityAway(&hero, enemy.*.pos);
                         },
                         else => {},
                     }
-                    addVelocityAway(enemy, hero.pos);
-                    addVelocityAway(&hero, enemy.*.pos);
                 }
                 useVelocity(enemy);
                 doArenaBorderCollision(enemy);
