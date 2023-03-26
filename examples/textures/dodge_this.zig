@@ -153,13 +153,6 @@ pub fn main() anyerror!void {
         // Update
         //----------------------------------------------------------------------------------
 
-        // Control frames speed
-        // if (rl.IsKeyPressed(rl.KeyboardKey.KEY_RIGHT)) {framesSpeed+=1;}
-        // else if (rl.IsKeyPressed(rl.KeyboardKey.KEY_LEFT)) {framesSpeed-=1;}
-
-        // if (framesSpeed > MAX_FRAME_SPEED) {framesSpeed = MAX_FRAME_SPEED;}
-        // else if (framesSpeed < MIN_FRAME_SPEED) {framesSpeed = MIN_FRAME_SPEED;}
-
 
         //----------------------------------------------------------------------------------
 
