@@ -76,7 +76,7 @@ fn doArenaBorderCollision(unit: *Unit) void {
         unit.pos.y = 0;
     }
 }
-const bounce_velocity = 20.0;
+const bounce_velocity = 2.0;
 fn addVelocityAway(forUnit: *Unit, from: rl.Vector2) void{
     const bigA = from.x - forUnit.pos.x;
     const bigB = from.y - forUnit.pos.y;
@@ -85,7 +85,7 @@ fn addVelocityAway(forUnit: *Unit, from: rl.Vector2) void{
         return;
     }
     const a = bigA/bigC;
-    const b = bigA/bigC;
+    const b = bigB/bigC;
     forUnit.velocity.x -= a*bounce_velocity;
     forUnit.velocity.y -= b*bounce_velocity;
 }
