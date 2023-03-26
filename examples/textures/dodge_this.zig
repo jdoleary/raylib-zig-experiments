@@ -25,7 +25,7 @@ const Unit = struct {
     target: rl.Vector2,
     velocity: rl.Vector2,
 };
-const NUMBER_OF_ENEMIES = 10;
+const NUMBER_OF_ENEMIES = 100;
 var enemies: [NUMBER_OF_ENEMIES]Unit = undefined;
 fn getRandomPointBetweenBounds() rl.Vector2{
     const xRand = @intToFloat(f32,rl.GetRandomValue(0,100))/100.0;
@@ -110,7 +110,7 @@ pub fn main() anyerror!void {
     // Initialization
     //--------------------------------------------------------------------------------------
     const screenWidth = 800;
-    const screenHeight = 450;
+    const screenHeight = 800;
     var score:u32 = 0;
     var heroHealth:i32 = heroMaxHealth;
 
@@ -118,20 +118,21 @@ pub fn main() anyerror!void {
     rl.InitWindow(screenWidth, screenHeight, "raylib [texture] example - sprite anim");
 
     var hero = Unit {
-        .pos = rl.Vector2{.x=0,.y=0},
+        .pos = getRandomPointBetweenBounds(),
         .kind = Kind.hero,
         .target = rl.Vector2{.x=0,.y=0},
         .velocity = rl.Vector2{.x=0,.y=0}
     };
-    var z:usize = 0;
-    while(z < NUMBER_OF_ENEMIES): (z+=1){
-        if(z < 7){
-            enemies[z] = makeUnit(Kind.yellow);
-        }else if (z < 9){
-            enemies[z] = makeUnit(Kind.blue);
+    var enemiesCurrentIndex:usize = 0;
+    while(enemiesCurrentIndex < 10): (enemiesCurrentIndex+=1){
+        if(enemiesCurrentIndex < 7){
+            enemies[enemiesCurrentIndex] = makeUnit(Kind.blue);
+        }else if (enemiesCurrentIndex < 9){
+            enemies[enemiesCurrentIndex] = makeUnit(Kind.yellow);
         }else{
-            enemies[z] = makeUnit(Kind.red);
+            enemies[enemiesCurrentIndex] = makeUnit(Kind.red);
         }
+                                std.debug.print("Make unit {}\n", .{enemiesCurrentIndex});
     }
 
     var camera = rl.Camera2D {
@@ -183,7 +184,7 @@ pub fn main() anyerror!void {
                     rl.DrawCircle(@intCast(c_int,i*100), @intCast(c_int,j*100), 2, rl.BLACK);
                 }
             }
-            for(enemies) |*enemy| {
+            for(enemies[0..enemiesCurrentIndex]) |*enemy| {
                 const color = switch(enemy.kind) {
                     Kind.blue => rl.BLUE,
                     Kind.hero => rl.GREEN,
@@ -220,6 +221,13 @@ pub fn main() anyerror!void {
                             score+=1;
                             // Respawn
                             enemy.pos = getRandomPointBetweenBounds();
+                            // Spawn new enemy
+                            if(enemiesCurrentIndex < NUMBER_OF_ENEMIES){
+                                const kind = if(@mod(enemiesCurrentIndex,5)==0) Kind.red else Kind.yellow;
+                                enemies[enemiesCurrentIndex] = makeUnit(kind);
+                                enemiesCurrentIndex+=1;
+                                std.debug.print("Make unit {}\n", .{enemiesCurrentIndex});
+                            }
                         },
                         Kind.red => {
                             heroHealth-=1;
