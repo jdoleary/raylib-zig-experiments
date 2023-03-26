@@ -219,6 +219,10 @@ pub fn main() anyerror!void {
                     switch(enemy.kind){
                         Kind.blue => {
                             score+=1;
+                            heroHealth += 1;
+                            if(heroHealth > heroMaxHealth){
+                                heroHealth = heroMaxHealth;
+                            }
                             // Respawn
                             enemy.pos = getRandomPointBetweenBounds();
                             // Spawn new enemy
@@ -248,7 +252,8 @@ pub fn main() anyerror!void {
             }
             useVelocity(&hero);
             doArenaBorderCollision(&hero);
-            rl.DrawCircle(@floatToInt(c_int, hero.pos.x), @floatToInt(c_int,hero.pos.y), unit_size, rl.GREEN);
+            rl.DrawCircle(@floatToInt(c_int, hero.pos.x), @floatToInt(c_int,hero.pos.y), unit_size*@intToFloat(f32,heroHealth)/heroMaxHealth, rl.GREEN);
+            rl.DrawRing(hero.pos, unit_size-1, unit_size+1, 0, 360, 30, rl.BLACK);
 
             camera.End();
             rl.DrawText(rl.TextFormat("Score: %03i", @intCast(c_int, score)), 25, 50, 20, rl.GREEN);
