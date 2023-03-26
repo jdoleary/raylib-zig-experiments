@@ -13,7 +13,7 @@ const c = @cImport({
 const MAX_FRAME_SPEED = 15;
 const MIN_FRAME_SPEED = 1;
 const agro_radius = 300;
-var unit_size = 50.0;
+const unit_size = 16.0;
 var score = 0;
 const heroMaxHealth = 10;
 var heroHealth = heroMaxHealth;
@@ -27,6 +27,23 @@ const Unit = struct {
     target: rl.Vector2,
     velocity: rl.Vector2,
 };
+const NUMBER_OF_ENEMIES = 100;
+var enemies: [NUMBER_OF_ENEMIES]Unit = undefined;
+fn getRandomPointBetweenBounds() rl.Vector2{
+    const xRand = @intToFloat(f32,rl.GetRandomValue(0,100))/100.0;
+    const yRand = @intToFloat(f32, rl.GetRandomValue(0,100))/100.0;
+    return rl.Vector2{.x= rlm.Lerp(0, arena_size, xRand), .y= rlm.Lerp(0, arena_size, yRand)};
+}
+fn makeUnit(kind:Kind) Unit {
+    const pos = getRandomPointBetweenBounds();
+    return Unit {
+        .pos = pos,
+        .kind = kind,
+        .target = pos,
+        .velocity = rl.Vector2{.x=0,.y=0}
+    };
+
+}
 
 fn moveToTarget(self: *rl.Vector2, target:rl.Vector2, speed: f32) bool {
     var bigA = target.x - self.x;
@@ -105,6 +122,11 @@ pub fn main() anyerror!void {
         .target = rl.Vector2{.x=0,.y=0},
         .velocity = rl.Vector2{.x=0,.y=0}
     };
+    var z:usize = 0;
+    while(z < NUMBER_OF_ENEMIES): (z+=1){
+        enemies[z] = makeUnit(Kind.yellow);
+    }
+
     var camera = rl.Camera2D {
         .target = rl.Vector2 { .x = hero.pos.x, .y = hero.pos.y },
         .offset = rl.Vector2 { .x = screenWidth/2, .y = screenHeight/2 },
@@ -117,7 +139,6 @@ pub fn main() anyerror!void {
 
     rl.SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
     //--------------------------------------------------------------------------------------
-
     // Main game loop
     while (!rl.WindowShouldClose())   // Detect window close button or ESC key
     {
@@ -143,7 +164,6 @@ pub fn main() anyerror!void {
             // std.debug.print("mouse: {d:.2} {d:.2}, {d:.2} {d:.2}\n", .{mousePos.x, mousePos.y, mousePosRaw.x, mousePosRaw.y});
             _ = moveToTargetDynamicSpeed(&hero.pos, mousePos);
             _ = moveToTargetDynamicSpeed(&camera.target, hero.pos);
-            doArenaBorderCollision(&hero);
 
             rl.ClearBackground(rl.RAYWHITE);
             // if (c.GuiButton(.{ .x= 25, .y=255, .width=125, .height=30 }, "test")) {
@@ -151,13 +171,30 @@ pub fn main() anyerror!void {
             // }
             // Draw grid
             const grids = arena_size/100;
-            for ([_]u32{0} ** grids) |_, i| {
-                for ([_]u32{0} ** grids) |_, j| {
+            for ([_]u32{0} ** (grids + 1)) |_, i| {
+                for ([_]u32{0} ** (grids + 1)) |_, j| {
                     rl.DrawCircle(@intCast(c_int,i*100), @intCast(c_int,j*100), 2, rl.BLACK);
                 }
             }
-            // std.debug.print("hero: {d},{d}\n", .{hero.pos.x, hero.pos.y});
-            rl.DrawCircle(@floatToInt(c_int, hero.pos.x), @floatToInt(c_int,hero.pos.y), 16, rl.GREEN);
+            for(enemies) |*enemy| {
+                const color = switch(enemy.kind) {
+                    Kind.blue => rl.BLUE,
+                    Kind.hero => rl.GREEN,
+                    Kind.red => rl.RED,
+                    Kind.yellow => rl.YELLOW,
+                };
+                if(areUnitsColliding(&hero, enemy)){
+                    addVelocityAway(enemy, hero.pos);
+                    addVelocityAway(&hero, enemy.*.pos);
+                }
+                useVelocity(enemy);
+                doArenaBorderCollision(enemy);
+                rl.DrawCircle(@floatToInt(c_int, enemy.*.pos.x), @floatToInt(c_int,enemy.*.pos.y), unit_size, color);
+            }
+            useVelocity(&hero);
+            doArenaBorderCollision(&hero);
+            rl.DrawCircle(@floatToInt(c_int, hero.pos.x), @floatToInt(c_int,hero.pos.y), unit_size, rl.GREEN);
+
             camera.End();
             rl.DrawFPS(25,25);
         rl.EndDrawing();
