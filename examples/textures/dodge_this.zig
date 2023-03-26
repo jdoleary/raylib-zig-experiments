@@ -36,6 +36,9 @@ fn moveToTargetDynamicSpeed(self: *rl.Vector2, target:rl.Vector2) bool {
     if(bigC < speed){
         return true;
     }
+    if(bigC == 0){
+        return true;
+    }
     var a = speed*bigA/bigC;
     var b = speed*bigB/bigC;
     self.x += a;
@@ -67,7 +70,8 @@ pub fn main() anyerror!void {
         .zoom = 1,
     };
 
-    rl.SetMousePosition(0,0);
+    // Set mouse position so it doens't crash with nan
+    rl.SetMousePosition(screenWidth/2,screenHeight/2);
 
     rl.SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
     //--------------------------------------------------------------------------------------
@@ -92,20 +96,26 @@ pub fn main() anyerror!void {
         //----------------------------------------------------------------------------------
         rl.BeginDrawing();
             camera.Begin();
-        const mousePosRaw = rl.GetMousePosition();
-        var mousePos = rl.GetScreenToWorld2D(mousePosRaw, camera);
-        std.debug.print("mouse: {d:.2} {d:.2}, {d:.2} {d:.2}\n", .{mousePos.x, mousePos.y, mousePosRaw.x, mousePosRaw.y});
-        _ = moveToTargetDynamicSpeed(&hero.pos, mousePos);
-        _ = moveToTargetDynamicSpeed(&camera.target, hero.pos);
+            const mousePosRaw = rl.GetMousePosition();
+            var mousePos = rl.GetScreenToWorld2D(mousePosRaw, camera);
+            // std.debug.print("mouse: {d:.2} {d:.2}, {d:.2} {d:.2}\n", .{mousePos.x, mousePos.y, mousePosRaw.x, mousePosRaw.y});
+            _ = moveToTargetDynamicSpeed(&hero.pos, mousePos);
+            _ = moveToTargetDynamicSpeed(&camera.target, hero.pos);
 
             rl.ClearBackground(rl.RAYWHITE);
             if (c.GuiButton(.{ .x= 25, .y=255, .width=125, .height=30 }, "test")) {
                 std.debug.print("Button!\n", .{});
             }
-            // origin
-            rl.DrawCircle(0, 0, 2, rl.BLACK);
-        std.debug.print("mouse: {d},{d}\n", .{hero.pos.x, hero.pos.y});
+            // Draw grid
+            const grids = 10;
+            for ([_]u32{0} ** grids) |_, i| {
+                for ([_]u32{0} ** grids) |_, j| {
+                    rl.DrawCircle(@intCast(c_int,i*64), @intCast(c_int,j*64), 2, rl.BLACK);
+                }
+            }
+            // std.debug.print("hero: {d},{d}\n", .{hero.pos.x, hero.pos.y});
             rl.DrawCircle(@floatToInt(c_int, hero.pos.x), @floatToInt(c_int,hero.pos.y), 16, rl.GREEN);
+            rl.DrawFPS(25,25);
             camera.End();
         rl.EndDrawing();
         //----------------------------------------------------------------------------------
