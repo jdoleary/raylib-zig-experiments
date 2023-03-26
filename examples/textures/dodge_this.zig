@@ -12,11 +12,9 @@ const c = @cImport({
 
 const MAX_FRAME_SPEED = 15;
 const MIN_FRAME_SPEED = 1;
-const agro_radius = 100;
+const agro_radius = 250;
 const unit_size = 16.0;
-var score = 0;
 const heroMaxHealth = 10;
-var heroHealth = heroMaxHealth;
 
 const arena_size = 1000;
 
@@ -27,7 +25,7 @@ const Unit = struct {
     target: rl.Vector2,
     velocity: rl.Vector2,
 };
-const NUMBER_OF_ENEMIES = 100;
+const NUMBER_OF_ENEMIES = 10;
 var enemies: [NUMBER_OF_ENEMIES]Unit = undefined;
 fn getRandomPointBetweenBounds() rl.Vector2{
     const xRand = @intToFloat(f32,rl.GetRandomValue(0,100))/100.0;
@@ -94,7 +92,7 @@ fn doArenaBorderCollision(unit: *Unit) void {
         unit.pos.y = 0;
     }
 }
-const bounce_velocity = 2.0;
+const bounce_velocity = 6.0;
 fn addVelocityAway(forUnit: *Unit, from: rl.Vector2) void{
     const bigA = from.x - forUnit.pos.x;
     const bigB = from.y - forUnit.pos.y;
@@ -113,6 +111,8 @@ pub fn main() anyerror!void {
     //--------------------------------------------------------------------------------------
     const screenWidth = 800;
     const screenHeight = 450;
+    var score:u32 = 0;
+    var heroHealth:i32 = heroMaxHealth;
 
     rl.InitAudioDevice();      // Initialize audio device
     rl.InitWindow(screenWidth, screenHeight, "raylib [texture] example - sprite anim");
@@ -125,7 +125,13 @@ pub fn main() anyerror!void {
     };
     var z:usize = 0;
     while(z < NUMBER_OF_ENEMIES): (z+=1){
-        enemies[z] = makeUnit(Kind.yellow);
+        if(z < 7){
+            enemies[z] = makeUnit(Kind.yellow);
+        }else if (z < 9){
+            enemies[z] = makeUnit(Kind.blue);
+        }else{
+            enemies[z] = makeUnit(Kind.red);
+        }
     }
 
     var camera = rl.Camera2D {
@@ -187,18 +193,20 @@ pub fn main() anyerror!void {
                 // Enemy behavior
                 switch(enemy.kind){
                     Kind.hero => {
-                        break;
                     },
                     Kind.blue => {
+                        // Flee
                         if(rlm.Vector2Distance(enemy.pos, hero.pos) < agro_radius){
                             enemy.target = rlm.Vector2Subtract(enemy.pos, rlm.Vector2Subtract(hero.pos, enemy.pos));
                         }
-                        break;
                     },
                     Kind.yellow => {
                     },
                     Kind.red => {
-                        break;
+                        // chase 
+                        if(rlm.Vector2Distance(enemy.pos, hero.pos) < agro_radius){
+                            enemy.target = hero.pos;
+                        }
                     },
                 }
                 const arrivedAtTarget = moveToTarget(&enemy.pos, enemy.target, 2);
@@ -207,6 +215,20 @@ pub fn main() anyerror!void {
                     enemy.target = getRandomPointBetweenBounds();
                 }
                 if(areUnitsColliding(&hero, enemy)){
+                    switch(enemy.kind){
+                        Kind.blue => {
+                            score+=1;
+                            // Respawn
+                            enemy.pos = getRandomPointBetweenBounds();
+                        },
+                        Kind.red => {
+                            heroHealth-=1;
+                        },
+                        Kind.yellow => {
+                            heroHealth-=1;
+                        },
+                        else => {},
+                    }
                     addVelocityAway(enemy, hero.pos);
                     addVelocityAway(&hero, enemy.*.pos);
                 }
@@ -219,6 +241,8 @@ pub fn main() anyerror!void {
             rl.DrawCircle(@floatToInt(c_int, hero.pos.x), @floatToInt(c_int,hero.pos.y), unit_size, rl.GREEN);
 
             camera.End();
+            rl.DrawText(rl.TextFormat("Score: %03i", @intCast(c_int, score)), 25, 50, 20, rl.GREEN);
+            rl.DrawText(rl.TextFormat("Health: %03i", @intCast(c_int, heroHealth)), 25, 75, 20, rl.RED);
             rl.DrawFPS(25,25);
         rl.EndDrawing();
         //----------------------------------------------------------------------------------
