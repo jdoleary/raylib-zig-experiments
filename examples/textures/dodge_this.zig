@@ -12,7 +12,7 @@ const c = @cImport({
 
 const MAX_FRAME_SPEED = 15;
 const MIN_FRAME_SPEED = 1;
-const agro_radius = 300;
+const agro_radius = 100;
 const unit_size = 16.0;
 var score = 0;
 const heroMaxHealth = 10;
@@ -69,7 +69,8 @@ fn moveToTargetDynamicSpeed(self: *rl.Vector2, target:rl.Vector2) bool {
     return moveToTarget(self, target, speed);
 }
 fn areUnitsColliding(a: *Unit, b: *Unit) bool {
-    return rlm.Vector2Distance(a.pos, b.pos) <= unit_size*2;
+    // 1.8 instead of 2 so that it really looks like they touch before they repel
+    return rlm.Vector2Distance(a.pos, b.pos) <= unit_size*1.8;
 }
 // Reduces velocity per tick
 const drag = 0.94;
@@ -183,6 +184,24 @@ pub fn main() anyerror!void {
                     Kind.red => rl.RED,
                     Kind.yellow => rl.YELLOW,
                 };
+                // Enemy behavior
+                switch(enemy.kind){
+                    Kind.hero => {
+                        break;
+                    },
+                    Kind.blue => {
+                        break;
+                    },
+                    Kind.yellow => {
+                        if(rlm.Vector2Distance(enemy.pos, hero.pos) < agro_radius){
+                            enemy.target = rlm.Vector2Subtract(enemy.pos, rlm.Vector2Subtract(hero.pos, enemy.pos));
+                        }
+                    },
+                    Kind.red => {
+                        break;
+                    },
+                }
+                _ = moveToTarget(&enemy.pos, enemy.target, 2);
                 if(areUnitsColliding(&hero, enemy)){
                     addVelocityAway(enemy, hero.pos);
                     addVelocityAway(&hero, enemy.*.pos);
